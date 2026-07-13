@@ -1,106 +1,3 @@
--- =========================================================================
--- SCRIPT DDL PARA CRIAR TABELAS
--- =========================================================================
-
-
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-CREATE TABLE clinics (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(150) NOT NULL,
-    address TEXT NOT NULL,
-    phone VARCHAR(20),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    full_name VARCHAR(150) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE patients (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    full_name VARCHAR(150) NOT NULL,
-    cpf VARCHAR(14) UNIQUE NOT NULL,
-    phone VARCHAR(20),
-    birth_date DATE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE roles (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(50) UNIQUE NOT NULL,
-    description TEXT
-);
-
-CREATE TABLE permissions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    module VARCHAR(50) NOT NULL,
-    action VARCHAR(50) NOT NULL,
-    description TEXT,
-    UNIQUE (module, action)
-);
-
-CREATE TABLE user_clinics (
-    user_id UUID NOT NULL REFERENCES users(id),
-    clinic_id UUID NOT NULL REFERENCES clinics(id),
-    PRIMARY KEY (user_id, clinic_id) 
-);
-
-CREATE TABLE user_roles (
-    user_id UUID NOT NULL REFERENCES users(id),
-    role_id UUID NOT NULL REFERENCES roles(id),
-    PRIMARY KEY (user_id, role_id)
-);
-
-CREATE TABLE role_permissions (
-    role_id UUID NOT NULL REFERENCES roles(id),
-    permission_id UUID NOT NULL REFERENCES permissions(id),
-    PRIMARY KEY (role_id, permission_id)
-);
-
-CREATE TABLE user_permissions (
-    user_id UUID NOT NULL REFERENCES users(id),
-    permission_id UUID NOT NULL REFERENCES permissions(id),
-    PRIMARY KEY (user_id, permission_id)
-);
-
-CREATE TABLE consultations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    patient_id UUID NOT NULL REFERENCES patients(id),
-    doctor_id UUID NOT NULL REFERENCES users(id), 
-    clinic_id UUID NOT NULL REFERENCES clinics(id),
-    scheduled_at TIMESTAMPTZ NOT NULL,
-    status VARCHAR(20) DEFAULT 'AGENDADA',
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE medical_records (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    consultation_id UUID UNIQUE NOT NULL REFERENCES consultations(id),
-    clinical_notes TEXT NOT NULL,
-    prescription TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE audit_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id), 
-    action_type VARCHAR(50) NOT NULL,
-    table_affected VARCHAR(50) NOT NULL,
-    record_id UUID NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-----------------
-
-
-
 
 -- =========================================================================
 -- SCRIPT DML PARA POPULAR AS TABELAS
@@ -570,45 +467,133 @@ WHERE u.email = 'carlos@email.com'
     WHERE ur.user_id = u.id AND r2.name = 'gerente'
   );
 
+=====================
 
 -- =========================================================================
--- SCRIPT DQL PARA SELECIONAR TABELAS
+-- 1. PERMISSIONS (faltando completamente)
 -- =========================================================================
 
------------------------------------
-select string_agg(DISTINCT name, ', ') AS todos_os_cargos FROM roles;
+INSERT INTO permissions (module, action, description) VALUES
+('usuarios', 'criar', 'Criar usuários'),
+('usuarios', 'listar', 'Listar usuários'),
+('usuarios', 'editar', 'Editar usuários'),
+('usuarios', 'excluir', 'Excluir usuários'),
 
-select string_agg(DISTINCT module, ', ') AS todos_os_modulos FROM permissions;
+('pacientes', 'criar', 'Criar pacientes'),
+('pacientes', 'listar', 'Listar pacientes'),
+('pacientes', 'editar', 'Editar pacientes'),
+('pacientes', 'excluir', 'Excluir pacientes'),
 
-select string_agg(DISTINCT action, ', ') AS todos_os_actions FROM permissions;
+('clinicas', 'criar', 'Criar clínicas'),
+('clinicas', 'listar', 'Listar clínicas'),
+('clinicas', 'editar', 'Editar clínicas'),
+('clinicas', 'excluir', 'Excluir clínicas'),
 
------------------------
+('consultas', 'criar', 'Criar consultas'),
+('consultas', 'listar', 'Listar consultas'),
+('consultas', 'editar', 'Editar consultas'),
+('consultas', 'cancelar', 'Cancelar consultas'),
 
-  select
-   r.name AS Cargo,
-   p.module AS Modulo,
-   p.action AS Acao
-  FROM role_permissions rp
-  INNER JOIN roles r ON r.id = rp.role_id
-  INNER JOIN permissions p ON p.id = rp. permission_id;
+('prontuarios', 'criar', 'Criar prontuários'),
+('prontuarios', 'listar', 'Listar prontuários'),
+('prontuarios', 'editar', 'Editar prontuários'),
 
-------------------------
+('relatorios', 'visualizar', 'Visualizar relatórios'),
+('financeiro', 'visualizar', 'Visualizar financeiro'),
+('configuracoes', 'editar', 'Editar configurações');
 
-select
-  u.full_name as usuario,
-  r.name as cargo,
-  p.module as modulo,
-  p.action as acao
-from
-  users u
-  join user_roles ur on u.id = ur.user_id
-  join roles r on ur.role_id = r.id
-  join role_permissions rp on r.id = rp.role_id
-  join permissions p on rp.permission_id = p.id
-order by
-  u.full_name,
-  r.name,
-  p.module,
-  p.action;
+-- =========================================================================
+-- 2. ASSOCIANDO PERMISSÕES ÀS FUNÇÕES
+-- =========================================================================
+-- ADMIN recebe tudo
+INSERT INTO role_permissions (role_id, permission_id) 
+SELECT (SELECT id FROM roles WHERE name = 'admin'), id FROM permissions
+ON CONFLICT (role_id, permission_id) DO NOTHING;
 
-  
+-- MÉDICO
+INSERT INTO role_permissions (role_id, permission_id) 
+SELECT (SELECT id FROM roles WHERE name = 'medico'), id FROM permissions 
+WHERE module IN ('pacientes', 'consultas', 'prontuarios')
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+-- SECRETÁRIA
+INSERT INTO role_permissions (role_id, permission_id) 
+SELECT (SELECT id FROM roles WHERE name = 'secretaria'), id FROM permissions 
+WHERE module IN ('pacientes', 'consultas')
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+-- GERENTE
+INSERT INTO role_permissions (role_id, permission_id) 
+SELECT (SELECT id FROM roles WHERE name = 'gerente'), id FROM permissions 
+WHERE module IN ('pacientes', 'consultas', 'relatorios', 'financeiro', 'clinicas')
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+-- =========================================================================
+-- 3. FALTAM MAIS VÍNCULOS DE USUÁRIOS COM FUNÇÕES
+-- (pelo menos 4 médicos, 4 secretárias e 4 gerentes)
+-- =========================================================================
+
+INSERT INTO user_roles (user_id, role_id) VALUES
+((SELECT id FROM users WHERE email='gabriel@email.com'),
+ (SELECT id FROM roles WHERE name='medico')),
+
+((SELECT id FROM users WHERE email='larissa@email.com'),
+ (SELECT id FROM roles WHERE name='medico')),
+
+((SELECT id FROM users WHERE email='lucas@email.com'),
+ (SELECT id FROM roles WHERE name='secretaria')),
+
+((SELECT id FROM users WHERE email='amanda@email.com'),
+ (SELECT id FROM roles WHERE name='secretaria')),
+
+((SELECT id FROM users WHERE email='rodrigo@email.com'),
+ (SELECT id FROM roles WHERE name='gerente')),
+
+((SELECT id FROM users WHERE email='camila.nunes@email.com'),
+ (SELECT id FROM roles WHERE name='gerente')),
+
+((SELECT id FROM users WHERE email='bruno@email.com'),
+ (SELECT id FROM roles WHERE name='medico')),
+
+((SELECT id FROM users WHERE email='leticia@email.com'),
+ (SELECT id FROM roles WHERE name='secretaria'));
+
+-- =========================================================================
+-- 4. FALTAM MAIS ASSOCIAÇÕES DE USUÁRIOS COM CLÍNICAS
+-- (4 médicos em clínicas diferentes,
+-- 4 secretárias em clínicas diferentes,
+-- 4 gerentes em clínicas diferentes)
+-- =========================================================================
+
+INSERT INTO user_clinics (user_id, clinic_id) 
+VALUES 
+-- MÉDICOS 
+((SELECT id FROM users WHERE email='mariana@email.com'), (SELECT id FROM clinics WHERE name='Clínica Alfa')), 
+((SELECT id FROM users WHERE email='roberto@email.com'), (SELECT id FROM clinics WHERE name='Clínica Beta')), 
+((SELECT id FROM users WHERE email='ricardo@email.com'), (SELECT id FROM clinics WHERE name='Clínica Gama')), 
+((SELECT id FROM users WHERE email='camila@email.com'), (SELECT id FROM clinics WHERE name='Clínica Delta')), 
+-- SECRETÁRIAS 
+((SELECT id FROM users WHERE email='paulo@email.com'), (SELECT id FROM clinics WHERE name='Clínica Épsilon')), 
+((SELECT id FROM users WHERE email='juliana@email.com'), (SELECT id FROM clinics WHERE name='Clínica Zeta')), 
+((SELECT id FROM users WHERE email='beatriz@email.com'), (SELECT id FROM clinics WHERE name='Clínica Eta')), 
+((SELECT id FROM users WHERE email='lucas@email.com'), (SELECT id FROM clinics WHERE name='Clínica Teta')), 
+-- GERENTES 
+((SELECT id FROM users WHERE email='ana@email.com'), (SELECT id FROM clinics WHERE name='Clínica Iota')), 
+((SELECT id FROM users WHERE email='fernando@email.com'), (SELECT id FROM clinics WHERE name='Clínica Kapa')), 
+((SELECT id FROM users WHERE email='rodrigo@email.com'), (SELECT id FROM clinics WHERE name='Clínica Lambda')), 
+((SELECT id FROM users WHERE email='camila.nunes@email.com'), (SELECT id FROM clinics WHERE name='Clínica Mu'))
+ON CONFLICT (user_id, clinic_id) DO NOTHING;
+
+-- =========================================================================
+-- 5. FALTAM PACIENTES
+-- Atualmente existem apenas 360 pacientes.
+-- Gerando mais 140 registros.
+-- =========================================================================
+
+INSERT INTO patients (full_name, cpf, phone, birth_date)
+SELECT
+    'Paciente ' || i,
+    '200.000.00-' || i,
+    '(11) 9999-' || LPAD(i::text,4,'0'),
+    DATE '1990-01-01' + (i || ' days')::interval
+FROM generate_series(361,500) AS i;
