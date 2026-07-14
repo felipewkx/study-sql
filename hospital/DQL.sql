@@ -17,13 +17,18 @@ SELECT string_agg(DISTINCT action, ', ') AS todos_os_actions FROM permissions;
 -- ====================================================================
 
 -- Retorna quais módulos e ações cada cargo específico tem acesso no sistema
-SELECT
-    r.name AS Cargo,
-    p.module AS Modulo,
-    p.action AS Acao
-FROM role_permissions rp
-INNER JOIN roles r ON r.id = rp.role_id
-INNER JOIN permissions p ON p.id = rp.permission_id;
+
+SELECT 
+    c.name AS "Clínica", 
+    r.name AS "Cargo", 
+    u.full_name AS "Usuário"
+FROM user_clinics uc
+INNER JOIN clinics c ON c.id = uc.clinic_id
+INNER JOIN user_roles ur ON ur.user_id = uc.user_id
+INNER JOIN roles r ON r.id = ur.role_id
+INNER JOIN users u ON u.id = uc.user_id
+ORDER BY 
+    r.name, c.name;
 
 
 -- ====================================================================
