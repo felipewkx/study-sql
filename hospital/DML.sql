@@ -597,3 +597,377 @@ SELECT
     '(11) 9999-' || LPAD(i::text,4,'0'),
     DATE '1990-01-01' + (i || ' days')::interval
 FROM generate_series(361,500) AS i;
+
+===========================================================================
+
+-- =========================================================================
+-- 1. CONSULTATIONS (20 registros)
+-- =========================================================================
+
+INSERT INTO consultations
+(patient_id, doctor_id, clinic_id, scheduled_at, status)
+VALUES
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 1'),
+    (SELECT id FROM users WHERE email = 'mariana@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Alfa'),
+    '2026-07-01 09:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 2'),
+    (SELECT id FROM users WHERE email = 'roberto@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Beta'),
+    '2026-07-01 10:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 3'),
+    (SELECT id FROM users WHERE email = 'ricardo@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Gama'),
+    '2026-07-02 08:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 4'),
+    (SELECT id FROM users WHERE email = 'camila@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Delta'),
+    '2026-07-02 09:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 5'),
+    (SELECT id FROM users WHERE email = 'gabriel@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Épsilon'),
+    '2026-07-03 09:30:00',
+    'AGENDADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 6'),
+    (SELECT id FROM users WHERE email = 'larissa@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Zeta'),
+    '2026-07-03 10:30:00',
+    'AGENDADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 7'),
+    (SELECT id FROM users WHERE email = 'bruno@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Eta'),
+    '2026-07-04 08:30:00',
+    'CANCELADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 8'),
+    (SELECT id FROM users WHERE email = 'mariana@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Alfa'),
+    '2026-07-04 11:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 9'),
+    (SELECT id FROM users WHERE email = 'roberto@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Beta'),
+    '2026-07-05 09:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 10'),
+    (SELECT id FROM users WHERE email = 'ricardo@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Gama'),
+    '2026-07-05 14:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 11'),
+    (SELECT id FROM users WHERE email = 'camila@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Delta'),
+    '2026-07-06 09:00:00',
+    'AGENDADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 12'),
+    (SELECT id FROM users WHERE email = 'gabriel@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Épsilon'),
+    '2026-07-06 10:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 13'),
+    (SELECT id FROM users WHERE email = 'larissa@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Zeta'),
+    '2026-07-07 08:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 14'),
+    (SELECT id FROM users WHERE email = 'bruno@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Eta'),
+    '2026-07-07 13:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 15'),
+    (SELECT id FROM users WHERE email = 'mariana@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Alfa'),
+    '2026-07-08 09:00:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 16'),
+    (SELECT id FROM users WHERE email = 'roberto@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Beta'),
+    '2026-07-08 10:00:00',
+    'AGENDADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 17'),
+    (SELECT id FROM users WHERE email = 'ricardo@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Gama'),
+    '2026-07-09 08:30:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 18'),
+    (SELECT id FROM users WHERE email = 'camila@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Delta'),
+    '2026-07-09 09:30:00',
+    'REALIZADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 19'),
+    (SELECT id FROM users WHERE email = 'gabriel@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Épsilon'),
+    '2026-07-10 11:00:00',
+    'AGENDADA'
+),
+
+(
+    (SELECT id FROM patients WHERE full_name = 'Paciente 20'),
+    (SELECT id FROM users WHERE email = 'larissa@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Zeta'),
+    '2026-07-10 14:00:00',
+    'REALIZADA'
+);
+
+-- =========================================================================
+-- 2. MEDICAL_RECORDS (somente consultas REALIZADAS)
+-- =========================================================================
+
+INSERT INTO medical_records
+(consultation_id, clinical_notes, prescription)
+SELECT
+    id,
+    'Paciente apresentou sintomas leves e evolução clínica satisfatória.',
+    'Paracetamol 750mg por 5 dias.'
+FROM consultations
+WHERE status = 'REALIZADA'
+LIMIT 20;
+
+-- =========================================================================
+-- 3. AUDIT_LOGS (20 registros)
+-- =========================================================================
+
+INSERT INTO audit_logs
+(user_id, action_type, table_affected, record_id)
+VALUES
+
+(
+    (SELECT id FROM users WHERE email='carlos@email.com'),
+    'INSERT',
+    'users',
+    gen_random_uuid()
+),
+
+(
+    (SELECT id FROM users WHERE email='ana@email.com'),
+    'UPDATE',
+    'clinics',
+    gen_random_uuid()
+),
+
+(
+    (SELECT id FROM users WHERE email='paulo@email.com'),
+    'INSERT',
+    'consultations',
+    (SELECT id FROM consultations LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='juliana@email.com'),
+    'INSERT',
+    'consultations',
+    (SELECT id FROM consultations OFFSET 1 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='mariana@email.com'),
+    'INSERT',
+    'medical_records',
+    (SELECT id FROM consultations OFFSET 2 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='roberto@email.com'),
+    'UPDATE',
+    'medical_records',
+    (SELECT id FROM consultations OFFSET 3 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='fernando@email.com'),
+    'UPDATE',
+    'patients',
+    (SELECT id FROM patients OFFSET 5 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='beatriz@email.com'),
+    'INSERT',
+    'patients',
+    (SELECT id FROM patients OFFSET 6 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='gabriel@email.com'),
+    'UPDATE',
+    'consultations',
+    (SELECT id FROM consultations OFFSET 4 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='larissa@email.com'),
+    'INSERT',
+    'medical_records',
+    (SELECT id FROM consultations OFFSET 5 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='ricardo@email.com'),
+    'UPDATE',
+    'consultations',
+    (SELECT id FROM consultations OFFSET 6 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='camila@email.com'),
+    'UPDATE',
+    'medical_records',
+    (SELECT id FROM consultations OFFSET 7 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='rodrigo@email.com'),
+    'UPDATE',
+    'clinics',
+    (SELECT id FROM clinics OFFSET 3 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='camila.nunes@email.com'),
+    'UPDATE',
+    'clinics',
+    (SELECT id FROM clinics OFFSET 4 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='lucas@email.com'),
+    'INSERT',
+    'consultations',
+    (SELECT id FROM consultations OFFSET 8 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='amanda@email.com'),
+    'INSERT',
+    'consultations',
+    (SELECT id FROM consultations OFFSET 9 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='bruno@email.com'),
+    'UPDATE',
+    'medical_records',
+    (SELECT id FROM consultations OFFSET 10 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='leticia@email.com'),
+    'UPDATE',
+    'patients',
+    (SELECT id FROM patients OFFSET 10 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='carlos@email.com'),
+    'DELETE',
+    'consultations',
+    (SELECT id FROM consultations OFFSET 11 LIMIT 1)
+),
+
+(
+    (SELECT id FROM users WHERE email='ana@email.com'),
+    'UPDATE',
+    'users',
+    (SELECT id FROM users OFFSET 5 LIMIT 1)
+);
+
+========================================
+-- Especialidades
+=======================================
+INSERT INTO roles (name, description) VALUES
+('cardiologista', 'Médico especialista em cardiologia'),
+('pediatra', 'Médico especialista em pediatria'),
+('ortopedista', 'Médico especialista em ortopedia'),
+('dermatologista', 'Médico especialista em dermatologia');
+
+INSERT INTO user_roles (user_id, role_id) VALUES
+
+(
+    (SELECT id FROM users WHERE email = 'mariana@email.com'),
+    (SELECT id FROM roles WHERE name = 'cardiologista')
+),
+
+(
+    (SELECT id FROM users WHERE email = 'roberto@email.com'),
+    (SELECT id FROM roles WHERE name = 'pediatra')
+),
+
+(
+    (SELECT id FROM users WHERE email = 'ricardo@email.com'),
+    (SELECT id FROM roles WHERE name = 'ortopedista')
+),
+
+(
+    (SELECT id FROM users WHERE email = 'camila@email.com'),
+    (SELECT id FROM roles WHERE name = 'dermatologista')
+),
+
+(
+    (SELECT id FROM users WHERE email = 'gabriel@email.com'),
+    (SELECT id FROM roles WHERE name = 'cardiologista')
+),
+
+(
+    (SELECT id FROM users WHERE email = 'bruno@email.com'),
+    (SELECT id FROM roles WHERE name = 'pediatra')
+);
+

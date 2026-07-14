@@ -19,8 +19,8 @@ SELECT string_agg(DISTINCT action, ', ') AS todos_os_actions FROM permissions;
 -- Retorna quais módulos e ações cada cargo específico tem acesso no sistema
 
 SELECT 
+    r.name AS "Cargo",
     c.name AS "Clínica", 
-    r.name AS "Cargo", 
     u.full_name AS "Usuário"
 FROM user_clinics uc
 INNER JOIN clinics c ON c.id = uc.clinic_id
@@ -68,7 +68,7 @@ JOIN user_roles ur ON u.id = ur.user_id
 JOIN roles r ON ur.role_id = r.id 
 JOIN role_permissions rp ON r.id = rp.role_id 
 JOIN permissions p ON rp.permission_id = p.id 
-WHERE r.name = 'secretaria' -- Substitua 'Medico' pelo nome exato como está salvo no seu banco (ex: 'Médico')
+WHERE r.name = 'medico' -- Substitua 'Medico' pelo nome exato como está salvo no seu banco (ex: 'Médico')
 ORDER BY u.full_name, r.name, p.module, p.action;
 
 
@@ -78,3 +78,95 @@ ORDER BY u.full_name, r.name, p.module, p.action;
 
 -- Retorna a quantidade total de clínicas (ou o que você quiser) cadastradas no banco de dados
 SELECT count(id) FROM clinics;
+
+-- ====================================================================
+-- 6. LISTAGEM DE PACIENTES
+-- ====================================================================
+-- Retorna todos os pacientes cadastrados no sistema em ordem alfabética
+SELECT * FROM patients ORDER BY full_name;
+=======================================================================
+-- Listar as consultas realizadas em uma unica data específica
+SELECT *
+FROM consultations
+WHERE DATE(scheduled_at) = '2026-07-01'
+  AND status = 'REALIZADA';
+  ========================================
+-- Listar os médicos de uma determinada especialidade.
+  SELECT
+    u.full_name AS medico,
+    r.name AS especialidade
+FROM users u
+JOIN user_roles ur
+    ON ur.user_id = u.id
+JOIN roles r
+    ON r.id = ur.role_id
+WHERE r.name = 'pediatra';
+=========================================================
+-- Liste os pacientes cujo nome começa com a letra 'A'.
+SELECT *
+FROM patients
+WHERE full_name LIKE 'A%';
+=======================================================
+-- Listar o nome do paciente e a data da consulta (utilizar JOIN entre pacientes e consultas)
+SELECT
+    p.full_name AS paciente,
+    DATE(c.scheduled_at) AS data_consulta
+FROM patients p
+JOIN consultations c
+    ON p.id = c.patient_id;
+
+==========================================
+-- Listar o nome do paciente, o nome do médico e a data da consulta (utilizar múltiplas tabelas).
+SELECT
+    p.full_name AS paciente,
+    u.full_name AS medico,
+    DATE(c.scheduled_at) AS data_consulta
+FROM consultations c
+JOIN patients p
+    ON p.id = c.patient_id
+JOIN users u
+    ON u.id = c.doctor_id;
+
+========================================
+-- Liste os pacientes atendidos por um médico específico (filtrar por nome do médico).
+SELECT p.full_name
+FROM consultations c
+JOIN patients p
+    ON p.id = c.patient_id
+JOIN users u
+    ON u.id = c.doctor_id
+WHERE u.full_name = 'Mariana Souza';
+==========================================
+-- Liste consultas realizadas após uma data específica e de uma determinada especialidade (usar AND)
+SELECT * 
+FROM consultations c 
+JOIN users u ON u.id = c.doctor_id 
+JOIN user_roles ur ON ur.user_id = u.id 
+JOIN roles r ON r.id = ur.role_id 
+WHERE c.scheduled_at > '2026-07-03' 
+  AND r.name = 'cardiologista' 
+  AND c.status = 'REALIZADA';
+
+============================================
+-- Liste o nome do paciente, médico, especialidade e data da consulta, filtrando pacientes com nome iniciado em 'M' e ordenado pela data mais recente.
+
+SELECT
+    p.full_name AS paciente,
+    u.full_name AS medico,
+    r.name AS especialidade,
+    DATE(c.scheduled_at) AS data_consulta
+FROM consultations c
+JOIN patients p ON p.id = c.patient_id
+JOIN users u ON u.id = c.doctor_id
+JOIN user_roles ur ON ur.user_id = u.id
+JOIN roles r ON r.id = ur.role_id
+WHERE p.full_name LIKE 'M%'
+  AND r.name IN (
+      'cardiologista',
+      'pediatra',
+      'ortopedista',
+      'dermatologista'
+  )
+ORDER BY c.scheduled_at;
+
+=======================================================
