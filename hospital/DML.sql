@@ -1,24 +1,30 @@
-
--- =========================================================================
+-- 
 -- SCRIPT DML PARA POPULAR AS TABELAS
--- =========================================================================
+-- 
 
 -- 1. POPULANDO AS ROLES (4 solicitadas)
 INSERT INTO roles (name, description) VALUES
 ('admin', 'Administrador geral do sistema com acesso total'),
 ('medico', 'Profissional de saúde que realiza consultas e prontuários'),
 ('gerente', 'Responsável pela gestão da clínica e relatórios'),
-('secretaria', 'Responsável pelos agendamentos e recepção de pacientes');
+('secretaria', 'Responsável pelos agendamentos e recepção de pacientes')
+ON CONFLICT (name) DO NOTHING;
 
-INSERT INTO roles (name, description) VALUES 
+INSERT INTO roles (name, description) VALUES
 ('fisioterapeuta', 'Responsável pela reabilitação física e motora dos pacientes internados'),
 ('assistente_social', 'Presta suporte acolhedor e assistencial a pacientes e familiares'),
 ('nutricionista', 'Responsável pelo planejamento dietético e nutrição clínica hospitalar'),
 ('faturista', 'Realiza o faturamento hospitalar, envio de guias e auditoria de contas'),
 ('maqueiro', 'Responsável pelo transporte seguro de pacientes entre os setores do hospital'),
-('auxiliar_limpeza', 'Garante a higienização rigorosa e o controle de infecção hospitalar');
+('auxiliar_limpeza', 'Garante a higienização rigorosa e o controle de infecção hospitalar')
+ON CONFLICT (name) DO NOTHING;
 
-
+INSERT INTO roles (name, description) VALUES
+('cardiologista', 'Médico especialista em cardiologia'),
+('pediatra', 'Médico especialista em pediatria'),
+('ortopedista', 'Médico especialista em ortopedia'),
+('dermatologista', 'Médico especialista em dermatologia')
+ON CONFLICT (name) DO NOTHING;
 
 -- 2. POPULANDO AS CLINICAS (40 solicitadas)
 INSERT INTO clinics (name, address, phone) VALUES
@@ -403,44 +409,53 @@ INSERT INTO patients (full_name, cpf, phone, birth_date) VALUES
 
 -- Permissões
 
-INSERT INTO permissions (module, action, description) VALUES 
--- Módulo de Usuários e Sistema
+INSERT INTO permissions (module, action, description) VALUES
 ('usuarios', 'gerenciar', 'Criar, editar e desativar usuários do sistema'),
 ('configuracoes', 'escalas_configurar', 'Definir plantões e horários de atendimento da equipe'),
 ('auditoria', 'acessar', 'Visualizar logs de alterações e acessos dos usuários'),
 ('relatorios', 'exportar', 'Gerar e baixar relatórios estatísticos e gerenciais'),
-
--- Módulo de Atendimento e Recepção
 ('consultas', 'agendar', 'Agendar, remarcar e cancelar consultas médicas'),
 ('pacientes', 'cadastrar', 'Criar e atualizar o cadastro básico de pacientes'),
 ('painel', 'chamar', 'Controlar o painel eletrônico de chamadas da recepção'),
-
--- Módulo Assistencial e Clínico
 ('prontuario', 'visualizar', 'Apenas visualizar o histórico clínico do paciente'),
 ('prontuario', 'escrever', 'Inserir evoluções, diagnósticos e receitas no prontuário'),
 ('triagem', 'realizar', 'Registrar sinais vitais e classificação de risco (Manchester)'),
 ('exames', 'solicitar', 'Emitir pedidos de exames laboratoriais ou de imagem'),
 ('exames', 'laudar', 'Inserir resultados e laudos de exames no sistema'),
-
--- Módulo de Internação e Leitos
 ('leitos', 'gerenciar', 'Controlar a ocupação, reserva e higienização de leitos'),
 ('internacao', 'dar_alta', 'Registrar a saída oficial e desinternação do paciente'),
-
--- Módulo de Farmácia e Suprimentos
 ('medicamentos', 'dispensar', 'Dar baixa e entregar medicamentos prescritos aos setores'),
 ('medicamentos', 'aprovar_prescricao', 'Validar e liberar receitas e dosagens na farmácia'),
 ('estoque', 'controlar', 'Registrar entrada de insumos e atualizar inventário hospitalar'),
-
--- Módulo Financeiro e Faturamento
 ('faturamento', 'enviar_guias', 'Emitir e enviar lotes de guias de convênio (TISS/TUSS)'),
 ('financeiro', 'visualizar', 'Acessar relatórios de fluxo de caixa e contas a pagar/receber'),
-('financeiro', 'editar', 'Dar baixa em pagamentos e emitir notas fiscais hospitalares');
+('financeiro', 'editar', 'Dar baixa em pagamentos e emitir notas fiscais hospitalares')
+ON CONFLICT (module, action) DO NOTHING;
 
-------
-
--- =========================================================================
--- SCRIPT DE INSERÇÃO - TABELA ROLE_PERMISSIONS (CENÁRIO HOSPITALAR)
--- =========================================================================
+INSERT INTO permissions (module, action, description) VALUES
+('usuarios', 'criar', 'Criar usuários'),
+('usuarios', 'listar', 'Listar usuários'),
+('usuarios', 'editar', 'Editar usuários'),
+('usuarios', 'excluir', 'Excluir usuários'),
+('pacientes', 'criar', 'Criar pacientes'),
+('pacientes', 'listar', 'Listar pacientes'),
+('pacientes', 'editar', 'Editar pacientes'),
+('pacientes', 'excluir', 'Excluir pacientes'),
+('clinicas', 'criar', 'Criar clínicas'),
+('clinicas', 'listar', 'Listar clínicas'),
+('clinicas', 'editar', 'Editar clínicas'),
+('clinicas', 'excluir', 'Excluir clínicas'),
+('consultas', 'criar', 'Criar consultas'),
+('consultas', 'listar', 'Listar consultas'),
+('consultas', 'editar', 'Editar consultas'),
+('consultas', 'cancelar', 'Cancelar consultas'),
+('prontuarios', 'criar', 'Criar prontuários'),
+('prontuarios', 'listar', 'Listar prontuários'),
+('prontuarios', 'editar', 'Editar prontuários'),
+('relatorios', 'visualizar', 'Visualizar relatórios'),
+('financeiro', 'visualizar', 'Visualizar financeiro'),
+('configuracoes', 'editar', 'Editar configurações')
+ON CONFLICT (module, action) DO NOTHING;
 
 insert into
   role_permissions (role_id, permission_id)
@@ -452,9 +467,9 @@ from
   permissions p
 where
   r.name in ('secretaria')
-  and p.module in ('pacientes', 'consultas')
+  and p.module in ('pacientes', 'consultas');
 
-==============
+
 
 INSERT INTO user_roles (user_id, role_id)
 SELECT u.id, r.id 
@@ -467,44 +482,14 @@ WHERE u.email = 'carlos@email.com'
     WHERE ur.user_id = u.id AND r2.name = 'gerente'
   );
 
-=====================
 
--- =========================================================================
--- 1. PERMISSIONS (faltando completamente)
--- =========================================================================
+;
 
-INSERT INTO permissions (module, action, description) VALUES
-('usuarios', 'criar', 'Criar usuários'),
-('usuarios', 'listar', 'Listar usuários'),
-('usuarios', 'editar', 'Editar usuários'),
-('usuarios', 'excluir', 'Excluir usuários'),
 
-('pacientes', 'criar', 'Criar pacientes'),
-('pacientes', 'listar', 'Listar pacientes'),
-('pacientes', 'editar', 'Editar pacientes'),
-('pacientes', 'excluir', 'Excluir pacientes'),
 
-('clinicas', 'criar', 'Criar clínicas'),
-('clinicas', 'listar', 'Listar clínicas'),
-('clinicas', 'editar', 'Editar clínicas'),
-('clinicas', 'excluir', 'Excluir clínicas'),
-
-('consultas', 'criar', 'Criar consultas'),
-('consultas', 'listar', 'Listar consultas'),
-('consultas', 'editar', 'Editar consultas'),
-('consultas', 'cancelar', 'Cancelar consultas'),
-
-('prontuarios', 'criar', 'Criar prontuários'),
-('prontuarios', 'listar', 'Listar prontuários'),
-('prontuarios', 'editar', 'Editar prontuários'),
-
-('relatorios', 'visualizar', 'Visualizar relatórios'),
-('financeiro', 'visualizar', 'Visualizar financeiro'),
-('configuracoes', 'editar', 'Editar configurações');
-
--- =========================================================================
+-- 
 -- 2. ASSOCIANDO PERMISSÕES ÀS FUNÇÕES
--- =========================================================================
+-- 
 -- ADMIN recebe tudo
 INSERT INTO role_permissions (role_id, permission_id) 
 SELECT (SELECT id FROM roles WHERE name = 'admin'), id FROM permissions
@@ -528,10 +513,10 @@ SELECT (SELECT id FROM roles WHERE name = 'gerente'), id FROM permissions
 WHERE module IN ('pacientes', 'consultas', 'relatorios', 'financeiro', 'clinicas')
 ON CONFLICT (role_id, permission_id) DO NOTHING;
 
--- =========================================================================
+-- 
 -- 3. FALTAM MAIS VÍNCULOS DE USUÁRIOS COM FUNÇÕES
 -- (pelo menos 4 médicos, 4 secretárias e 4 gerentes)
--- =========================================================================
+-- 
 
 INSERT INTO user_roles (user_id, role_id) VALUES
 ((SELECT id FROM users WHERE email='gabriel@email.com'),
@@ -558,12 +543,12 @@ INSERT INTO user_roles (user_id, role_id) VALUES
 ((SELECT id FROM users WHERE email='leticia@email.com'),
  (SELECT id FROM roles WHERE name='secretaria'));
 
--- =========================================================================
+-- 
 -- 4. FALTAM MAIS ASSOCIAÇÕES DE USUÁRIOS COM CLÍNICAS
 -- (4 médicos em clínicas diferentes,
 -- 4 secretárias em clínicas diferentes,
 -- 4 gerentes em clínicas diferentes)
--- =========================================================================
+-- 
 
 INSERT INTO user_clinics (user_id, clinic_id) 
 VALUES 
@@ -584,11 +569,11 @@ VALUES
 ((SELECT id FROM users WHERE email='camila.nunes@email.com'), (SELECT id FROM clinics WHERE name='Clínica Mu'))
 ON CONFLICT (user_id, clinic_id) DO NOTHING;
 
--- =========================================================================
+-- 
 -- 5. FALTAM PACIENTES
 -- Atualmente existem apenas 360 pacientes.
 -- Gerando mais 140 registros.
--- =========================================================================
+-- 
 
 INSERT INTO patients (full_name, cpf, phone, birth_date)
 SELECT
@@ -598,11 +583,11 @@ SELECT
     DATE '1990-01-01' + (i || ' days')::interval
 FROM generate_series(361,500) AS i;
 
-===========================================================================
 
--- =========================================================================
+
+-- 
 -- 1. CONSULTATIONS (20 registros)
--- =========================================================================
+-- 
 
 INSERT INTO consultations
 (patient_id, doctor_id, clinic_id, scheduled_at, status)
@@ -768,9 +753,9 @@ VALUES
     'REALIZADA'
 );
 
--- =========================================================================
+-- 
 -- 2. MEDICAL_RECORDS (somente consultas REALIZADAS)
--- =========================================================================
+-- 
 
 INSERT INTO medical_records
 (consultation_id, clinical_notes, prescription)
@@ -782,9 +767,9 @@ FROM consultations
 WHERE status = 'REALIZADA'
 LIMIT 20;
 
--- =========================================================================
+-- 
 -- 3. AUDIT_LOGS (20 registros)
--- =========================================================================
+-- 
 
 INSERT INTO audit_logs
 (user_id, action_type, table_affected, record_id)
@@ -930,14 +915,8 @@ VALUES
     (SELECT id FROM users OFFSET 5 LIMIT 1)
 );
 
-========================================
 -- Especialidades
-=======================================
-INSERT INTO roles (name, description) VALUES
-('cardiologista', 'Médico especialista em cardiologia'),
-('pediatra', 'Médico especialista em pediatria'),
-('ortopedista', 'Médico especialista em ortopedia'),
-('dermatologista', 'Médico especialista em dermatologia');
+
 
 INSERT INTO user_roles (user_id, role_id) VALUES
 
@@ -971,3 +950,199 @@ INSERT INTO user_roles (user_id, role_id) VALUES
     (SELECT id FROM roles WHERE name = 'pediatra')
 );
 
+INSERT INTO user_permissions (user_id, permission_id)
+VALUES
+(
+    (SELECT id FROM users WHERE email = 'mariana@email.com'),
+    (SELECT id FROM permissions WHERE module = 'prontuarios' AND action = 'editar')
+),
+(
+    (SELECT id FROM users WHERE email = 'roberto@email.com'),
+    (SELECT id FROM permissions WHERE module = 'prontuarios' AND action = 'criar')
+),
+(
+    (SELECT id FROM users WHERE email = 'carlos@email.com'),
+    (SELECT id FROM permissions WHERE module = 'financeiro' AND action = 'visualizar')
+)
+ON CONFLICT (user_id, permission_id) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role_id)
+VALUES
+(
+    (SELECT id FROM users WHERE email = 'felipe@email.com'),
+    (SELECT id FROM roles WHERE name = 'fisioterapeuta')
+),
+(
+    (SELECT id FROM users WHERE email = 'aline@email.com'),
+    (SELECT id FROM roles WHERE name = 'nutricionista')
+)
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+INSERT INTO user_clinics (user_id, clinic_id)
+VALUES
+(
+    (SELECT id FROM users WHERE email = 'felipe@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Alfa')
+),
+(
+    (SELECT id FROM users WHERE email = 'aline@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Beta')
+),
+(
+    (SELECT id FROM users WHERE email = 'gabriel@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Épsilon')
+),
+(
+    (SELECT id FROM users WHERE email = 'larissa@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Zeta')
+),
+(
+    (SELECT id FROM users WHERE email = 'bruno@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Eta')
+)
+ON CONFLICT (user_id, clinic_id) DO NOTHING;
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r, permissions p
+WHERE r.name IN ('cardiologista', 'pediatra', 'ortopedista', 'dermatologista')
+  AND p.module IN ('pacientes', 'consultas', 'prontuarios')
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r, permissions p
+WHERE r.name = 'fisioterapeuta'
+  AND ((p.module = 'prontuario' AND p.action = 'visualizar') OR (p.module = 'triagem' AND p.action = 'realizar') OR (p.module = 'prontuarios' AND p.action = 'listar'))
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r, permissions p
+WHERE r.name = 'nutricionista'
+  AND ((p.module = 'prontuario' AND p.action = 'visualizar') OR (p.module = 'prontuarios' AND p.action = 'listar'))
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r, permissions p
+WHERE r.name = 'faturista'
+  AND (p.module = 'financeiro' OR (p.module = 'faturamento' AND p.action = 'enviar_guias'))
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r, permissions p
+WHERE r.name = 'assistente_social'
+  AND (p.module = 'pacientes' AND p.action IN ('listar', 'visualizar', 'editar'))
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r, permissions p
+WHERE r.name IN ('maqueiro', 'auxiliar_limpeza')
+  AND (p.module = 'leitos' AND p.action = 'gerenciar')
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+INSERT INTO consultations (id, patient_id, doctor_id, clinic_id, scheduled_at, status)
+VALUES
+(
+    'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+    (SELECT id FROM patients WHERE full_name = 'Paciente 21'),
+    (SELECT id FROM users WHERE email = 'mariana@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Alfa'),
+    '2026-07-11 09:00:00',
+    'REALIZADA'
+),
+(
+    'b2c3d4e5-f67a-8b9c-0d1e-2f3a4b5c6d7e',
+    (SELECT id FROM patients WHERE full_name = 'Paciente 22'),
+    (SELECT id FROM users WHERE email = 'roberto@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Beta'),
+    '2026-07-11 10:00:00',
+    'REALIZADA'
+),
+(
+    'c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
+    (SELECT id FROM patients WHERE full_name = 'Paciente 23'),
+    (SELECT id FROM users WHERE email = 'ricardo@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Gama'),
+    '2026-07-12 08:00:00',
+    'REALIZADA'
+),
+(
+    'd4e5f67a-8b9c-0d1e-2f3a-4b5c6d7e8f9a',
+    (SELECT id FROM patients WHERE full_name = 'Paciente 24'),
+    (SELECT id FROM users WHERE email = 'camila@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Delta'),
+    '2026-07-12 09:00:00',
+    'CANCELADA'
+),
+(
+    'e5f67a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b',
+    (SELECT id FROM patients WHERE full_name = 'Paciente 25'),
+    (SELECT id FROM users WHERE email = 'gabriel@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Épsilon'),
+    '2026-07-13 09:30:00',
+    'AGENDADA'
+),
+(
+    'f67a8b9c-0d1e-2f3a-4b5c-6d7e8f9a0b1c',
+    (SELECT id FROM patients WHERE full_name = 'Paciente 26'),
+    (SELECT id FROM users WHERE email = 'larissa@email.com'),
+    (SELECT id FROM clinics WHERE name = 'Clínica Zeta'),
+    '2026-07-13 10:30:00',
+    'REALIZADA'
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO medical_records (consultation_id, clinical_notes, prescription)
+VALUES
+(
+    'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
+    'Paciente relata melhora significativa após o tratamento inicial. Sinais vitais estáveis.',
+    'Manter medicação anterior por mais 30 dias.'
+),
+(
+    'b2c3d4e5-f67a-8b9c-0d1e-2f3a4b5c6d7e',
+    'Consulta de rotina. Desenvolvimento físico adequado para a idade.',
+    'Vitaminas suplementares recomendadas.'
+),
+(
+    'c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
+    'Avaliação ortopédica pós-gesso. Recuperação completa da mobilidade.',
+    'Sessões de fisioterapia recomendadas.'
+),
+(
+    'f67a8b9c-0d1e-2f3a-4b5c-6d7e8f9a0b1c',
+    'Apresenta quadro de alergia cutânea leve. Sem febre ou outros sintomas.',
+    'Anti-histamínico de uso diário por 7 dias.'
+)
+ON CONFLICT (consultation_id) DO NOTHING;
+
+INSERT INTO audit_logs (user_id, action_type, table_affected, record_id)
+VALUES
+(
+    (SELECT id FROM users WHERE email = 'mariana@email.com'),
+    'INSERT',
+    'medical_records',
+    'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d'
+),
+(
+    (SELECT id FROM users WHERE email = 'roberto@email.com'),
+    'INSERT',
+    'medical_records',
+    'b2c3d4e5-f67a-8b9c-0d1e-2f3a4b5c6d7e'
+),
+(
+    (SELECT id FROM users WHERE email = 'felipe@email.com'),
+    'UPDATE',
+    'patients',
+    (SELECT id FROM patients WHERE full_name = 'Paciente 21' LIMIT 1)
+),
+(
+    (SELECT id FROM users WHERE email = 'aline@email.com'),
+    'UPDATE',
+    'patients',
+    (SELECT id FROM patients WHERE full_name = 'Paciente 22' LIMIT 1)
+);
