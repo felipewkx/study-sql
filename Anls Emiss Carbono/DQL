@@ -1,0 +1,51 @@
+-- DQL
+
+SELECT
+    companies.name AS empresa,
+    sectors.name AS setor,
+    countries.name AS pais
+FROM companies
+INNER JOIN sectors
+ON companies.sector_id = sectors.id
+INNER JOIN countries
+ON companies.country_id = countries.id;
+
+--
+
+SELECT
+    companies.name AS empresa,
+    emission_records.year,
+    emission_records.co2_emission
+FROM emission_records
+INNER JOIN companies
+ON emission_records.company_id = companies.id
+INNER JOIN sectors
+ON companies.sector_id = sectors.id
+WHERE sectors.name = 'Energia'
+ORDER BY emission_records.year DESC;
+
+--
+
+SELECT
+    countries.name AS pais,
+    SUM(emission_records.co2_emission) AS total_emissao
+FROM emission_records
+INNER JOIN companies
+ON emission_records.company_id = companies.id
+INNER JOIN countries
+ON companies.country_id = countries.id
+GROUP BY countries.name
+ORDER BY total_emissao DESC;
+
+--
+
+SELECT
+    companies.name AS empresa,
+    emission_records.co2_emission
+FROM emission_records
+INNER JOIN companies
+ON emission_records.company_id = companies.id
+WHERE emission_records.year = 2024
+ORDER BY emission_records.co2_emission DESC
+LIMIT 3;
+

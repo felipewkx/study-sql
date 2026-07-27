@@ -1,0 +1,81 @@
+-- DML
+
+INSERT INTO countries (name)
+VALUES
+('Brasil'),
+('Estados Unidos'),
+('Alemanha');
+
+
+INSERT INTO sectors (name)
+VALUES
+('Energia'),
+('Manufatura'),
+('Transporte'),
+('Mineração');
+
+
+INSERT INTO companies (name, country_id, sector_id)
+VALUES
+(
+'PetroSul',
+(SELECT id FROM countries WHERE name='Brasil'),
+(SELECT id FROM sectors WHERE name='Energia')
+),
+
+(
+'MetalTech',
+(SELECT id FROM countries WHERE name='Brasil'),
+(SELECT id FROM sectors WHERE name='Manufatura')
+),
+
+(
+'EcoTransport',
+(SELECT id FROM countries WHERE name='Brasil'),
+(SELECT id FROM sectors WHERE name='Transporte')
+),
+
+(
+'PowerUSA',
+(SELECT id FROM countries WHERE name='Estados Unidos'),
+(SELECT id FROM sectors WHERE name='Energia')
+),
+
+(
+'GermanSteel',
+(SELECT id FROM countries WHERE name='Alemanha'),
+(SELECT id FROM sectors WHERE name='Manufatura')
+),
+
+(
+'MinerX',
+(SELECT id FROM countries WHERE name='Estados Unidos'),
+(SELECT id FROM sectors WHERE name='Mineração')
+);
+
+
+
+INSERT INTO emission_records (company_id, year, co2_emission)
+VALUES
+
+((SELECT id FROM companies WHERE name='PetroSul'),2022,120.50),
+((SELECT id FROM companies WHERE name='PetroSul'),2023,128.40),
+((SELECT id FROM companies WHERE name='PetroSul'),2024,133.80),
+
+((SELECT id FROM companies WHERE name='MetalTech'),2022,70.20),
+((SELECT id FROM companies WHERE name='MetalTech'),2023,75.10),
+((SELECT id FROM companies WHERE name='MetalTech'),2024,80.60),
+
+((SELECT id FROM companies WHERE name='EcoTransport'),2022,40.00),
+((SELECT id FROM companies WHERE name='EcoTransport'),2023,45.00),
+((SELECT id FROM companies WHERE name='EcoTransport'),2024,50.00),
+
+((SELECT id FROM companies WHERE name='PowerUSA'),2022,200.00),
+((SELECT id FROM companies WHERE name='PowerUSA'),2023,210.00),
+((SELECT id FROM companies WHERE name='PowerUSA'),2024,220.00),
+
+((SELECT id FROM companies WHERE name='GermanSteel'),2023,95.00),
+
+((SELECT id FROM companies WHERE name='MinerX'),2022,150.00),
+((SELECT id FROM companies WHERE name='MinerX'),2024,170.00);
+
