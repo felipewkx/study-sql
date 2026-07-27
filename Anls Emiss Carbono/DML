@@ -1,18 +1,31 @@
--- DML
+-- DML 
+
 
 INSERT INTO countries (name)
 VALUES
 ('Brasil'),
 ('Estados Unidos'),
-('Alemanha');
-
+('Alemanha'),
+('Canadá'),
+('Japão'),
+('França'),
+('Reino Unido'),
+('China'),
+('Índia'),
+('Austrália');
 
 INSERT INTO sectors (name)
 VALUES
 ('Energia'),
 ('Manufatura'),
 ('Transporte'),
-('Mineração');
+('Mineração'),
+('Agricultura'),
+('Tecnologia'),
+('Saúde'),
+('Construção'),
+('Varejo'),
+('Telecomunicações');
 
 
 INSERT INTO companies (name, country_id, sector_id)
@@ -51,8 +64,31 @@ VALUES
 'MinerX',
 (SELECT id FROM countries WHERE name='Estados Unidos'),
 (SELECT id FROM sectors WHERE name='Mineração')
-);
+),
 
+(
+'MapleAgro',
+(SELECT id FROM countries WHERE name='Canadá'),
+(SELECT id FROM sectors WHERE name='Agricultura')
+),
+
+(
+'NipponTech',
+(SELECT id FROM countries WHERE name='Japão'),
+(SELECT id FROM sectors WHERE name='Tecnologia')
+),
+
+(
+'SantéPlus',
+(SELECT id FROM countries WHERE name='França'),
+(SELECT id FROM sectors WHERE name='Saúde')
+),
+
+(
+'BuildAus',
+(SELECT id FROM countries WHERE name='Austrália'),
+(SELECT id FROM sectors WHERE name='Construção')
+);
 
 
 INSERT INTO emission_records (company_id, year, co2_emission)
@@ -74,8 +110,29 @@ VALUES
 ((SELECT id FROM companies WHERE name='PowerUSA'),2023,210.00),
 ((SELECT id FROM companies WHERE name='PowerUSA'),2024,220.00),
 
+((SELECT id FROM companies WHERE name='GermanSteel'),2022,90.00),
 ((SELECT id FROM companies WHERE name='GermanSteel'),2023,95.00),
+((SELECT id FROM companies WHERE name='GermanSteel'),2024,102.00),
 
 ((SELECT id FROM companies WHERE name='MinerX'),2022,150.00),
-((SELECT id FROM companies WHERE name='MinerX'),2024,170.00);
+((SELECT id FROM companies WHERE name='MinerX'),2023,160.00),
+((SELECT id FROM companies WHERE name='MinerX'),2024,170.00),
+
+((SELECT id FROM companies WHERE name='MapleAgro'),2022,35.50),
+((SELECT id FROM companies WHERE name='MapleAgro'),2023,37.20),
+((SELECT id FROM companies WHERE name='MapleAgro'),2024,39.10),
+
+((SELECT id FROM companies WHERE name='NipponTech'),2022,22.80),
+((SELECT id FROM companies WHERE name='NipponTech'),2023,24.10),
+((SELECT id FROM companies WHERE name='NipponTech'),2024,25.30),
+
+((SELECT id FROM companies WHERE name='SantéPlus'),2022,18.40),
+((SELECT id FROM companies WHERE name='SantéPlus'),2023,17.90),
+((SELECT id FROM companies WHERE name='SantéPlus'),2024,17.10),
+
+((SELECT id FROM companies WHERE name='BuildAus'),2022,60.50),
+((SELECT id FROM companies WHERE name='BuildAus'),2023,64.00),
+((SELECT id FROM companies WHERE name='BuildAus'),2024,68.20);
+
+
 

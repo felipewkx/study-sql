@@ -1,5 +1,3 @@
--- DDL
-
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE countries (
